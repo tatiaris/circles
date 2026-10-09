@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101311">
+  <title>Friends Graph</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="friends-builder.css">
+  <script src="app.js" defer></script>
+  <script src="friends-builder.js" defer></script>
+</head>
+
+<body>
+  <nav class="view-switcher" aria-label="Switch view">
+    <button class="view-tab" type="button" data-view="graph" aria-pressed="true">Graph</button>
+    <button class="view-tab" type="button" data-view="editor" aria-pressed="false">Edit friends</button>
+  </nav>
+
+  <main class="app-shell unified-shell">
+    <section id="graph-view" class="app-view graph-view" aria-label="Graph view">
+      <input id="file-input" type="file" accept=".json,application/json">
+
+      <section id="drop-zone" class="drop-zone compact-drop-zone" aria-label="JSON file drop zone" role="button"
+        tabindex="0">
+        <span class="upload-icon" aria-hidden="true">↥</span>
+        <div>
+          <strong>Drop a friends JSON file here</strong>
+          <span>or choose a file to import</span>
+        </div>
+      </section>
+      <p id="status" class="status" role="status" aria-live="polite">
+        Add people in Edit friends, or import a JSON file to get started.
+      </p>
+
+      <section id="results" class="results" hidden>
+        <div class="summary" aria-label="Graph summary">
+          <div class="stat"><span id="people-count">0</span><span>people</span></div>
+          <div class="stat"><span id="connection-count">0</span><span>connections</span></div>
+          <div class="stat"><span id="cluster-count">0</span><span>clusters</span></div>
+          <div class="graph-tools" aria-label="Graph controls">
+            <label class="button button-secondary file-button" for="file-input">Import</label>
+            <label class="visualization-control">
+              <span>View</span>
+              <select id="visualization-select" aria-label="Choose graph visualization">
+                <option value="force">Network</option>
+                <option value="clusters">Clusters</option>
+                <option value="matrix">Adjacency matrix</option>
+                <option value="focus">Focus</option>
+                <option value="arc">Arc diagram</option>
+              </select>
+            </label>
+            <label id="focus-control" class="visualization-control" hidden>
+              <span>Person</span>
+              <select id="focus-person" aria-label="Choose person to focus"></select>
+            </label>
+            <button id="zoom-out" class="icon-tool" type="button" aria-label="Zoom out">−</button>
+            <span id="zoom-level" aria-live="polite">100%</span>
+            <button id="zoom-in" class="icon-tool" type="button" aria-label="Zoom in">＋</button>
+            <button id="fit-graph" class="button button-secondary" type="button">Fit</button>
+            <button id="download-graph" class="button button-secondary graph-download" type="button" disabled>
+              Export image <span aria-hidden="true">↓</span>
+            </button>
+          </div>
+          <p class="graph-hint">Hover over a person for their username and mutual count.</p>
+        </div>
+
+        <div class="graph-wrap">
+          <canvas id="graph" aria-label="Graph of friends connected by mutuals"></canvas>
+          <div id="tooltip" class="tooltip" role="status" hidden></div>
+        </div>
+      </section>
+    </section>
+
+    <section id="editor-view" class="app-view editor-view" aria-label="Friends editor" hidden>
+      <header class="view-header">
+        <div>
+          <p class="eyebrow">YOUR SOCIAL CIRCLES</p>
+          <h1>Edit your friends</h1>
+          <p class="subtitle">Add people and connect mutual friends. Changes appear in the graph automatically.</p>
+        </div>
+      </header>
+
+      <section class="builder-layout" aria-label="Friends list builder">
+        <aside class="builder-panel add-panel">
+          <div class="section-heading">
+            <div class="step-number">1</div>
+            <div>
+              <h2>Add a person</h2>
+              <p>Start with their name and username.</p>
+            </div>
+          </div>
+          <form id="add-form" class="add-form">
+            <label>
+              <span>Full name</span>
+              <input id="full-name" name="fullName" type="text" maxlength="80" placeholder="e.g. Jordan Lee" required>
+            </label>
+            <label>
+              <span>Username</span>
+              <div class="username-field">
+                <span aria-hidden="true">@</span>
+                <input id="username" name="username" type="text" maxlength="30" placeholder="jordan.lee" required>
+              </div>
+            </label>
+            <button class="button button-primary add-button" type="submit">Add to friends <span
+                aria-hidden="true">＋</span></button>
+          </form>
+
+          <div class="import-box">
+            <div>
+              <strong>Already have a list?</strong>
+              <span>Import a summary JSON to keep editing it.</span>
+            </div>
+            <label class="button button-small" for="import-input">Import JSON</label>
+            <input id="import-input" type="file" accept=".json,application/json">
+          </div>
+        </aside>
+
+        <section class="builder-panel people-panel">
+          <div class="people-header">
+            <div class="section-heading">
+              <div class="step-number">2</div>
+              <div>
+                <h2>Your people <span id="builder-people-count" class="count-pill">0</span></h2>
+                <p>Connect mutuals to make the graph come alive.</p>
+              </div>
+            </div>
+            <label class="search-field">
+              <span class="visually-hidden">Search friends</span>
+              <span aria-hidden="true">⌕</span>
+              <input id="search-input" type="search" placeholder="Search people">
+            </label>
+          </div>
+
+          <div id="empty-state" class="empty-state">
+            <span class="empty-icon" aria-hidden="true">◎</span>
+            <strong>Your list starts here</strong>
+            <p>Add a person on the left, then connect them to their mutual friends.</p>
+          </div>
+          <div id="people-list" class="people-list" aria-live="polite"></div>
+          <p id="list-status" class="builder-status" role="status" aria-live="polite"></p>
+        </section>
+      </section>
+
+      <section class="export-panel">
+        <div class="export-copy">
+          <div class="step-number step-number-export">3</div>
+          <div>
+            <h2>Ready to see your circles?</h2>
+            <p>Your list is saved here and synced to the graph automatically.</p>
+          </div>
+        </div>
+        <div class="export-actions">
+          <button id="show-graph" class="button button-secondary" type="button">View graph</button>
+          <button id="download-button" class="button button-primary" type="button" disabled>Download JSON <span
+              aria-hidden="true">↓</span></button>
+        </div>
+      </section>
+      <p id="save-status" class="save-status" role="status" aria-live="polite">Your list is saved in this browser
+        automatically.</p>
+    </section>
+  </main>
+
+  <dialog id="connections-dialog" class="connections-dialog" aria-labelledby="dialog-title">
+    <form id="connections-form" method="dialog">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">FRIEND CONNECTIONS</p>
+          <h2 id="dialog-title">Connect mutuals</h2>
+          <p id="dialog-subtitle" class="dialog-subtitle"></p>
+        </div>
+        <button id="close-dialog" class="icon-button" type="button" aria-label="Close">×</button>
+      </div>
+      <label class="dialog-search">
+        <span aria-hidden="true">⌕</span>
+        <input id="connection-search" type="search" placeholder="Find someone in your list">
+      </label>
+      <div id="connection-options" class="connection-options"></div>
+      <div class="dialog-footer">
+        <span id="connection-selection-count">0 selected</span>
+        <div>
+          <button id="cancel-connections" class="button button-secondary" type="button">Cancel</button>
+          <button class="button button-primary" type="submit">Save connections</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+</body>
+
+</html>

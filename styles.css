@@ -1,0 +1,741 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #101311;
+  color: #f1f2ec;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --muted: #929a92;
+  --line: #292f2b;
+  --green: #c6f277;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(ellipse at 50% -35%, #243020 0, transparent 52%),
+    #101311;
+}
+
+button,
+label {
+  font: inherit;
+}
+
+.app-shell {
+  width: min(1160px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 48px 0 56px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.16em;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 650;
+  letter-spacing: -0.055em;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+#file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border: 1px solid #414a40;
+  border-radius: 9px;
+  color: #e8ebdf;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.button:hover,
+.button:focus-visible {
+  border-color: #758460;
+  background: #242b21;
+  outline: none;
+}
+
+.drop-zone {
+  display: flex;
+  min-height: 118px;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  border: 1px dashed #485044;
+  border-radius: 14px;
+  background: #171b18cc;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: left;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.drop-zone:focus-visible {
+  border-color: var(--green);
+  outline: 2px solid #c6f27766;
+  outline-offset: 3px;
+}
+
+.drop-zone.is-dragging {
+  border-color: var(--green);
+  background: #222b1b;
+}
+
+.upload-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #3b4435;
+  border-radius: 12px;
+  color: var(--green);
+  font-size: 23px;
+}
+
+.drop-zone strong,
+.drop-zone span:not(.upload-icon) {
+  display: block;
+}
+
+.drop-zone strong {
+  margin-bottom: 5px;
+  color: #e6e9df;
+  font-size: 14px;
+}
+
+.drop-zone div span {
+  font-size: 12px;
+}
+
+.status {
+  min-height: 20px;
+  margin: 13px 2px 20px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.status.error {
+  color: #ff9b91;
+}
+
+code {
+  color: #d7edaf;
+}
+
+.results[hidden] {
+  display: none;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 72px;
+  align-items: center;
+  gap: 14px 28px;
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.stat span:first-child {
+  color: #f0f2e9;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+}
+
+.stat span:last-child,
+.graph-hint {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.graph-hint {
+  margin-left: auto;
+}
+
+.graph-download {
+  min-height: 36px;
+  padding: 0 11px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.graph-wrap {
+  position: relative;
+  min-height: 760px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 50% 45%, #192019 0, #141815 60%, #121513 100%);
+}
+
+#graph {
+  display: block;
+  width: 100%;
+  height: max(85vh, 760px);
+  min-height: 760px;
+  touch-action: none;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  max-width: 230px;
+  padding: 10px 12px;
+  border: 1px solid #404a3e;
+  border-radius: 9px;
+  background: #202620f2;
+  box-shadow: 0 8px 24px #0005;
+  color: #f0f2e9;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.tooltip[hidden] {
+  display: none;
+}
+
+.tooltip strong,
+.tooltip span {
+  display: block;
+}
+
+.tooltip span {
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.legend {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  left: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  pointer-events: none;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid #343a35;
+  border-radius: 20px;
+  background: #151916e8;
+  color: #c7cdc4;
+  font-size: 10px;
+}
+
+.legend-swatch {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    width: min(100% - 28px, 1160px);
+    padding-top: 32px;
+  }
+
+  .page-header {
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .drop-zone {
+    min-height: 102px;
+  }
+
+  .summary {
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    padding: 10px 0;
+  }
+
+  .graph-hint {
+    width: 100%;
+    margin: 0;
+  }
+
+  .graph-download {
+    flex: 1;
+  }
+
+  .graph-wrap,
+  #graph {
+    min-height: 760px;
+  }
+
+  .graph-wrap {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+}
+
+.unified-shell {
+  width: min(1500px, calc(100% - 48px));
+  padding-top: 88px;
+}
+
+.view-switcher {
+  position: fixed;
+  z-index: 10;
+  top: 16px;
+  left: 18px;
+  display: flex;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid #343b35;
+  border-radius: 12px;
+  background: #171c18eF;
+  box-shadow: 0 8px 24px #0004;
+  backdrop-filter: blur(12px);
+}
+
+.view-tab {
+  min-height: 34px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #9da69b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.view-tab:hover,
+.view-tab[aria-pressed="true"] {
+  background: #293126;
+  color: var(--green);
+}
+
+.view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.view-header h1 {
+  font-size: clamp(30px, 4vw, 42px);
+}
+
+.view-header .subtitle {
+  font-size: 13px;
+}
+
+.app-view[hidden] {
+  display: none;
+}
+
+.compact-drop-zone {
+  min-height: 70px;
+  justify-content: flex-start;
+  padding: 10px 18px;
+  border-radius: 11px;
+}
+
+#drop-zone[hidden] {
+  display: none;
+}
+
+.compact-drop-zone .upload-icon {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+}
+
+.graph-tools {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.icon-tool {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #414a40;
+  border-radius: 8px;
+  background: #171b18;
+  color: #e8ebdf;
+  cursor: pointer;
+  font: inherit;
+  font-size: 17px;
+}
+
+.icon-tool:hover {
+  border-color: #758460;
+  background: #242b21;
+}
+
+.graph-tools .button {
+  min-height: 34px;
+}
+
+.graph-wrap {
+  height: min(78vh, 1000px);
+  min-height: 480px;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.graph-wrap.is-dragging {
+  border-color: var(--green);
+  background-color: #222b1b;
+}
+
+#graph {
+  transform-origin: top left;
+  touch-action: none;
+  will-change: transform;
+}
+
+.graph-view .summary {
+  gap: 12px 24px;
+  margin-bottom: 8px;
+}
+
+.graph-view .graph-hint {
+  margin: 0 0 0 auto;
+}
+
+.graph-view .status {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 760px) {
+  .unified-shell {
+    width: calc(100% - 28px);
+    padding-top: 78px;
+  }
+
+  .view-header {
+    align-items: flex-start;
+  }
+
+  .view-header .subtitle {
+    max-width: 34ch;
+    line-height: 1.5;
+  }
+
+  .graph-tools {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .graph-tools .graph-download {
+    flex: 1;
+  }
+
+  .graph-view .graph-hint {
+    width: 100%;
+    margin: 0;
+  }
+
+  .graph-wrap {
+    height: 68vh;
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 480px) {
+  .view-switcher {
+    top: 10px;
+    left: 10px;
+  }
+
+  .unified-shell {
+    padding-top: 68px;
+  }
+
+  .view-header h1 {
+    font-size: 30px;
+  }
+
+  .graph-tools {
+    gap: 5px;
+  }
+}
+
+.graph-view {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 1px 1px, #68726024 1px, transparent 0) 0 0 / 22px 22px,
+    radial-gradient(ellipse at 50% 42%, #192019 0, #121613 72%);
+}
+
+.graph-view .status {
+  position: fixed;
+  z-index: 4;
+  bottom: 14px;
+  left: 18px;
+  max-width: min(480px, calc(100vw - 36px));
+  min-height: 0;
+  margin: 0;
+  padding: 7px 10px;
+  border: 1px solid #343b35aa;
+  border-radius: 8px;
+  background: #141915d9;
+  font-size: 10px;
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+}
+
+.graph-view .status:not(.error) {
+  display: none;
+}
+
+.graph-view .results {
+  display: contents;
+}
+
+.graph-view .results[hidden] {
+  display: none;
+}
+
+.graph-view .summary {
+  position: fixed;
+  z-index: 5;
+  top: 16px;
+  right: 166px;
+  display: flex;
+  min-height: 0;
+  flex-wrap: nowrap;
+  gap: 6px;
+  margin: 0;
+  padding: 5px 8px;
+  border: 1px solid #343b35;
+  border-radius: 11px;
+  background: #141915eF;
+  box-shadow: 0 8px 24px #0003;
+  backdrop-filter: blur(12px);
+}
+
+.graph-view .stat {
+  gap: 4px;
+}
+
+.graph-view .stat span:first-child {
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.graph-view .stat span:last-child {
+  font-size: 9px;
+}
+
+.graph-view .graph-tools {
+  gap: 4px;
+  margin-left: 4px;
+  font-size: 9px;
+}
+
+.visualization-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.visualization-control[hidden] {
+  display: none;
+}
+
+.visualization-control select {
+  max-width: 90px;
+  min-height: 25px;
+  padding: 0 5px;
+  border: 1px solid #414a40;
+  border-radius: 6px;
+  background: #171b18;
+  color: #e8ebdf;
+  font: inherit;
+  cursor: pointer;
+}
+
+.visualization-control select:focus-visible {
+  border-color: var(--green);
+  outline: 2px solid #c6f27740;
+  outline-offset: 2px;
+}
+
+.graph-view .icon-tool {
+  width: 25px;
+  height: 25px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.graph-view .graph-tools .button {
+  min-height: 25px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 9px;
+}
+
+.graph-view .graph-hint {
+  display: none;
+}
+
+.graph-view .graph-wrap {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.graph-view .graph-wrap.is-dragging {
+  outline: 2px solid var(--green);
+  outline-offset: -8px;
+  background: #c6f2770a;
+}
+
+.graph-view #graph {
+  display: block;
+  min-height: 0;
+}
+
+.graph-view .compact-drop-zone {
+  position: fixed;
+  z-index: 4;
+  top: 50%;
+  left: 50%;
+  width: min(330px, calc(100vw - 44px));
+  min-height: 62px;
+  padding: 8px 12px;
+  background: #141915eF;
+  transform: translate(-50%, -50%);
+  backdrop-filter: blur(12px);
+}
+
+@media (max-width: 760px) {
+  .graph-view .summary {
+    top: 14px;
+    right: 10px;
+    bottom: auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: min(280px, calc(100vw - 20px));
+  }
+
+  .graph-view .graph-tools {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    width: 100%;
+    margin: 0;
+  }
+
+  .graph-view .status.error {
+    bottom: 14px;
+    left: 10px;
+    max-width: min(480px, calc(100vw - 20px));
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 420px) {
+  .graph-view .summary {
+    top: 10px;
+    bottom: auto;
+    max-width: 230px;
+    gap: 4px;
+    padding: 5px;
+  }
+
+  .graph-view .graph-tools .graph-download {
+    flex: 0 0 auto;
+  }
+
+  .graph-view .stat span:first-child {
+    font-size: 11px;
+  }
+
+  .graph-view .stat span:last-child {
+    font-size: 8px;
+  }
+}
