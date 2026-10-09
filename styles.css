@@ -695,23 +695,42 @@ code {
 
 @media (max-width: 760px) {
   .graph-view .summary {
-    top: 14px;
+    top: auto;
+    left: 10px;
     right: 10px;
-    bottom: auto;
+    bottom: max(10px, env(safe-area-inset-bottom));
     flex-wrap: wrap;
-    justify-content: flex-end;
-    max-width: min(280px, calc(100vw - 20px));
+    justify-content: center;
+    max-width: none;
   }
 
   .graph-view .graph-tools {
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: center;
     width: 100%;
     margin: 0;
   }
 
+  .graph-view .graph-tools .graph-download {
+    flex: 1 0 100%;
+  }
+
+  .graph-view .visualization-control select {
+    max-width: 120px;
+    min-height: 32px;
+  }
+
+  .graph-view .icon-tool {
+    width: 32px;
+    height: 32px;
+  }
+
+  .graph-view .graph-tools .button {
+    min-height: 32px;
+  }
+
   .graph-view .status.error {
-    bottom: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
     left: 10px;
     max-width: min(480px, calc(100vw - 20px));
     font-size: 9px;
@@ -720,15 +739,14 @@ code {
 
 @media (max-width: 420px) {
   .graph-view .summary {
-    top: 10px;
-    bottom: auto;
-    max-width: 230px;
-    gap: 4px;
-    padding: 5px;
-  }
-
-  .graph-view .graph-tools .graph-download {
-    flex: 0 0 auto;
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: auto;
+    max-width: none;
+    gap: 6px 10px;
+    padding: 7px;
   }
 
   .graph-view .stat span:first-child {
@@ -737,5 +755,9 @@ code {
 
   .graph-view .stat span:last-child {
     font-size: 8px;
+  }
+
+  .graph-view .graph-tools {
+    gap: 5px;
   }
 }

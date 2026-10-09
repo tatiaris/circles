@@ -15,7 +15,7 @@ Open `index.html` in a modern browser. No package installation or build step is 
 
 ## JSON format
 
-Import either a top-level array of friends or an object containing a `friends` array. Each friend needs a unique username and a non-empty `full_name` or `name`. Mutuals can be usernames or objects containing an `id`/`pk` and/or `username`.
+Import either a top-level array of friends or an object containing a `friends` array. Each friend needs a non-empty `full_name` or `name`; a username is optional. Names added in the editor must be unique (case-insensitive). Mutuals can be usernames or objects containing an `id`/`pk` and/or `username`.
 
 ```json
 {
@@ -31,14 +31,13 @@ Import either a top-level array of friends or an object containing a `friends` a
     {
       "id": "456",
       "full_name": "Jordan Example",
-      "username": "jordan.example",
       "mutuals": []
     }
   ]
 }
 ```
 
-Mutual connections are displayed when the mutual person is also present in the imported friends list. IDs and usernames should be unique.
+Mutual connections are displayed when the mutual person is also present in the imported friends list. IDs and any supplied usernames should be unique.
 
 ## Project files
 

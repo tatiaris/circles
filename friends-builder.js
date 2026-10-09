@@ -2,7 +2,6 @@ const STORAGE_KEY = 'friends-list-builder-v1';
 const friends = [];
 const addForm = document.querySelector('#add-form');
 const fullNameInput = document.querySelector('#full-name');
-const usernameInput = document.querySelector('#username');
 const peopleList = document.querySelector('#people-list');
 const peopleCount = document.querySelector('#builder-people-count');
 const emptyState = document.querySelector('#empty-state');
@@ -29,6 +28,15 @@ function createId(usedIds = new Set(friends.map(friend => friend.id))) {
 
 function normalizeUsername(value) {
   return value.trim().replace(/^@+/, '').toLowerCase();
+}
+
+function normalizeName(value) {
+  return value.trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+function hasDuplicateName(name) {
+  const normalizedName = normalizeName(name);
+  return friends.some(friend => normalizeName(friend.full_name) === normalizedName);
 }
 
 function nameInitials(name) {
@@ -77,9 +85,13 @@ function renderFriends() {
     details.className = 'person-details';
     const name = document.createElement('strong');
     name.textContent = friend.full_name;
-    const username = document.createElement('span');
-    username.textContent = `@${friend.username}`;
-    details.append(name, username);
+    if (friend.username) {
+      const username = document.createElement('span');
+      username.textContent = `@${friend.username}`;
+      details.append(name, username);
+    } else {
+      details.append(name);
+    }
 
     const mutuals = document.createElement('span');
     mutuals.className = 'mutual-count';
@@ -115,27 +127,24 @@ function renderFriends() {
   }
 }
 
-function addFriend(fullName, username) {
+function addFriend(fullName) {
   const cleanName = fullName.trim().replace(/\s+/g, ' ');
-  const cleanUsername = normalizeUsername(username);
-  if (!cleanName || !cleanUsername) {
-    setListStatus('Enter both a name and username.', true);
+  if (!cleanName) {
+    setListStatus('Enter a name.', true);
     return false;
   }
-  if (!/^[a-zA-Z0-9._]{1,30}$/.test(cleanUsername)) {
-    setListStatus('Usernames can use letters, numbers, periods, and underscores.', true);
+  if (hasDuplicateName(cleanName)) {
+    setListStatus(`${cleanName} is already on your list.`, true);
+    fullNameInput.setCustomValidity('This name is already on your list.');
+    fullNameInput.focus();
     return false;
   }
-  if (friends.some(friend => friend.username === cleanUsername)) {
-    setListStatus(`@${cleanUsername} is already on your list.`, true);
-    usernameInput.focus();
-    return false;
-  }
+  fullNameInput.setCustomValidity('');
 
   friends.push({
     id: createId(),
     full_name: cleanName,
-    username: cleanUsername,
+    username: '',
     mutuals: new Set()
   });
   setListStatus('');
@@ -249,18 +258,19 @@ function parseFriendList(data) {
       throw new Error('Every friend entry must be an object.');
     }
     const username = normalizeUsername(typeof raw.username === 'string' ? raw.username : '');
-    const fullName = String(raw.full_name ?? raw.name ?? username).trim();
-    if (!username || !fullName || !/^[a-zA-Z0-9._]{1,30}$/.test(username)) {
-      throw new Error('Each friend needs a name and a valid username.');
+    const fullName = String(raw.full_name || raw.name || username).trim();
+    if (!fullName) throw new Error('Each friend needs a name.');
+    if (username && !/^[a-zA-Z0-9._]{1,30}$/.test(username)) {
+      throw new Error(`@${username} is not a valid username.`);
     }
-    if (byUsername.has(username)) throw new Error(`The imported list has duplicate username @${username}.`);
+    if (username && byUsername.has(username)) throw new Error(`The imported list has duplicate username @${username}.`);
     const oldId = raw.pk ?? raw.id;
     const id = oldId == null ? createId(usedIds) : String(oldId);
     if (usedIds.has(id)) throw new Error(`The imported list has duplicate id ${id}.`);
     usedIds.add(id);
     const friend = { id, full_name: fullName, username, mutuals: new Set() };
     imported.push({ friend, rawMutuals: Array.isArray(raw.mutuals) ? raw.mutuals : [] });
-    byUsername.set(username, friend);
+    if (username) byUsername.set(username, friend);
     if (oldId != null) byId.set(String(oldId), friend);
   }
 
@@ -295,7 +305,7 @@ async function importFile(file) {
 }
 
 function makeSummary() {
-  const usernames = friends.map(friend => friend.username);
+  const usernames = friends.map(friend => friend.username).filter(Boolean);
   return {
     notFollowers: [],
     notFollowingBack: [],
@@ -304,11 +314,14 @@ function makeSummary() {
     friends: friends.map(friend => ({
       pk: friend.id,
       full_name: friend.full_name,
-      username: friend.username,
+      ...(friend.username ? { username: friend.username } : {}),
       mutuals: [...friend.mutuals]
         .map(id => friends.find(person => person.id === id))
         .filter(Boolean)
-        .map(person => ({ id: person.id, username: person.username }))
+        .map(person => ({
+          id: person.id,
+          ...(person.username ? { username: person.username } : {})
+        }))
     }))
   };
 }
@@ -327,10 +340,18 @@ function downloadSummary() {
 
 addForm.addEventListener('submit', event => {
   event.preventDefault();
-  if (addFriend(fullNameInput.value, usernameInput.value)) {
+  if (addFriend(fullNameInput.value)) {
     addForm.reset();
+    fullNameInput.setCustomValidity('');
     fullNameInput.focus();
   }
+});
+fullNameInput.addEventListener('input', () => {
+  const name = fullNameInput.value.trim();
+  const duplicate = name && hasDuplicateName(name);
+  fullNameInput.setCustomValidity(duplicate ? 'This name is already on your list.' : '');
+  if (duplicate) setListStatus(`${name} is already on your list.`, true);
+  else if (listStatus.textContent.includes('already on your list')) setListStatus('');
 });
 searchInput.addEventListener('input', renderFriends);
 connectionSearch.addEventListener('input', renderConnectionOptions);

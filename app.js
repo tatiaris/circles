@@ -70,8 +70,9 @@ function buildGraph(data) {
     }
     const username = typeof friend.username === 'string' ? friend.username.trim().toLowerCase() : '';
     const id = friend.pk ?? friend.id;
-    if (!username && id == null) {
-      throw new Error('Each friend needs at least a username or id.');
+    const name = getFriendName(friend);
+    if (!name || (id == null && !username)) {
+      throw new Error('Each friend needs a name and either a username or id.');
     }
 
     const usernameIndex = username ? byUsername.get(username) : undefined;
@@ -87,13 +88,13 @@ function buildGraph(data) {
 
     const node = {
       id: id == null ? username : String(id),
-      username: username || String(id),
-      name: getFriendName(friend),
+      username,
+      name,
       mutualCount: 0,
       mutuals: Array.isArray(friend.mutuals) ? friend.mutuals : [],
       links: new Set(),
       community: 0,
-      labelLines: getFriendName(friend).split(/\s+/).slice(0, 2),
+      labelLines: name.split(/\s+/).slice(0, 2),
       x: 0,
       y: 0,
       radius: 26
@@ -521,7 +522,7 @@ function assignPositions() {
     graph.clusterRegions = [];
     const order = nodes.map((_, index) => index).sort((a, b) =>
       nodes[a].community - nodes[b].community ||
-      nodes[a].username.localeCompare(nodes[b].username)
+      (nodes[a].username || nodes[a].name).localeCompare(nodes[b].username || nodes[b].name)
     );
     const matrixIndex = new Array(nodes.length);
     order.forEach((nodeIndex, index) => {
@@ -544,7 +545,7 @@ function assignPositions() {
     const order = nodes.map((_, index) => index).sort((a, b) =>
       nodes[a].community - nodes[b].community ||
       nodes[b].mutualCount - nodes[a].mutualCount ||
-      nodes[a].username.localeCompare(nodes[b].username)
+      (nodes[a].username || nodes[a].name).localeCompare(nodes[b].username || nodes[b].name)
     );
     graph.arcOrder = order;
     graph.arcIndex = new Array(nodes.length);
@@ -587,7 +588,9 @@ function assignPositions() {
     const groups = [[], [], [], []];
     depths.forEach((depth, index) => groups[depth].push(index));
     for (const group of groups) {
-      group.sort((a, b) => nodes[a].username.localeCompare(nodes[b].username));
+      group.sort((a, b) =>
+        (nodes[a].username || nodes[a].name).localeCompare(nodes[b].username || nodes[b].name)
+      );
     }
     const orbitRadii = [0, 0, 0, 0].map((_, depth) => {
       if (depth === 0) return 0;
@@ -765,13 +768,13 @@ function drawGraph(hoveredIndex = -1) {
       const node = graph.nodes[nodeIndex];
       const active = hoveredIndex === nodeIndex;
       context.fillStyle = active ? '#ffffff' : '#b8beb6';
-      context.fillText(node.username, left - 10, top + index * cell + cell / 2);
+      context.fillText(node.username || node.name, left - 10, top + index * cell + cell / 2);
       context.save();
       context.translate(left + index * cell + cell / 2, top - 10);
       context.rotate(-Math.PI / 2);
       context.textAlign = 'left';
       context.textBaseline = 'middle';
-      context.fillText(node.username, 0, 0);
+      context.fillText(node.username || node.name, 0, 0);
       context.restore();
       context.fillStyle = active ? '#ffffff' : '#667067';
       context.fillRect(left + index * cell + 1, top + index * cell + 1, cell - 2, cell - 2);
@@ -877,7 +880,7 @@ function drawGraph(hoveredIndex = -1) {
       context.textAlign = 'right';
       context.textBaseline = 'middle';
       context.font = '10px Inter, ui-sans-serif, system-ui, sans-serif';
-      context.fillText(node.username, 0, 0);
+      context.fillText(node.username || node.name, 0, 0);
       context.restore();
       if (index === hoveredIndex) {
         context.beginPath();
@@ -894,7 +897,7 @@ function drawGraph(hoveredIndex = -1) {
     context.font = '600 9px Inter, ui-sans-serif, system-ui, sans-serif';
     const lines = node.labelLines.length > 1
       ? [node.labelLines[0], node.labelLines[node.labelLines.length - 1]]
-      : [node.labelLines[0] || node.username];
+      : [node.labelLines[0] || node.username || node.name];
     const lineHeight = 11;
     lines.forEach((line, lineIndex) => {
       const yOffset = (lineIndex - (lines.length - 1) / 2) * lineHeight;
@@ -927,7 +930,7 @@ function showTooltip(node, x, y) {
   const name = document.createElement('strong');
   name.textContent = node.name;
   const detail = document.createElement('span');
-  detail.textContent = `@${node.username} · ${node.mutualCount} mutual${node.mutualCount === 1 ? '' : 's'}`;
+  detail.textContent = `${node.username ? `@${node.username} · ` : ''}${node.mutualCount} mutual${node.mutualCount === 1 ? '' : 's'}`;
   tooltip.append(name, detail);
   tooltip.hidden = false;
   const wrapRect = canvas.parentElement.getBoundingClientRect();
@@ -945,15 +948,15 @@ function render(data) {
   document.querySelector('#cluster-count').textContent = graph.clusters.length;
   const focusIndex = graph.nodes.map((node, index) => ({ node, index }))
     .sort((a, b) => b.node.mutualCount - a.node.mutualCount ||
-      a.node.username.localeCompare(b.node.username))[0]?.index ?? 0;
+      (a.node.username || a.node.name).localeCompare(b.node.username || b.node.name))[0]?.index ?? 0;
   focusedNodeIndex = focusIndex;
   focusPersonSelect.replaceChildren(...graph.nodes
     .map((node, index) => ({ node, index }))
-    .sort((a, b) => a.node.username.localeCompare(b.node.username))
+    .sort((a, b) => (a.node.username || a.node.name).localeCompare(b.node.username || b.node.name))
     .map(({ node, index }) => {
       const option = document.createElement('option');
       option.value = String(index);
-      option.textContent = `@${node.username}`;
+      option.textContent = node.username ? `@${node.username}` : node.name;
       option.selected = index === focusedNodeIndex;
       return option;
     }));
